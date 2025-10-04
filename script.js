@@ -1,138 +1,170 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // URL вашего бэкенда на Google Apps Script (вставите его позже)
-    const BACKEND_URL = 'ВАШ_URL_БЭКЕНДА_БУДЕТ_ЗДЕСЬ'; 
+:root {
+    --bg-color: var(--tg-theme-bg-color, #ffffff);
+    --text-color: var(--tg-theme-text-color, #000000);
+    --hint-color: var(--tg-theme-hint-color, #aaaaaa);
+    --button-color: var(--tg-theme-button-color, #2481CC);
+    --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+    --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f3f2f7);
+}
 
-    const tg = window.Telegram.WebApp;
-    tg.expand(); // Расширяем приложение на весь экран
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: color 0.2s, background-color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
 
-    // Настраиваем цвета под тему Telegram
-    document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
-    document.body.style.color = tg.themeParams.text_color || '#000000';
-    
-    // Элементы DOM
-    const startScreen = document.getElementById('start-screen');
-    const quizScreen = document.getElementById('quiz-screen');
-    const resultScreen = document.getElementById('result-screen');
+#app {
+    padding: 20px 15px;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    box-sizing: border-box;
+}
 
-    const startBtn = document.getElementById('start-btn');
-    const restartBtn = document.getElementById('restart-btn');
+.screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    animation: fadeIn 0.4s ease-in-out;
+}
 
-    const progressBar = document.getElementById('progress-bar');
-    const questionTitle = document.getElementById('question-title');
-    const questionText = document.getElementById('question-text');
-    const answersContainer = document.getElementById('answers-container');
+.screen.active {
+    display: flex;
+}
 
-    const resultToneEl = document.getElementById('result-tone');
-    const resultDescriptionEl = document.getElementById('result-description');
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-    let currentQuestionIndex = 0;
-    let scores = {};
+h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
 
-    // --- ДАННЫЕ КВИЗА ---
-    const quizData = [
-        { text: "<b>1/22: Эмоции, которые Вы чаще всего испытываете:</b>", answers: [ { text: "🚀 Рвение, энтузиазм", level: "4.0" }, { text: "😄 Веселье, сильный интерес", level: "3.5" }, { text: "🙂 Умеренный интерес, удовлетворенность", level: "3.0" }, { text: "😐 Безразличие, скука", level: "2.5" }, { text: "😠 Выраженное возмущение, антагонизм", level: "2.0" }, { text: "😡 Гнев, озлобленность", level: "1.5" }, { text: "😨 Скрытый страх, неприязнь", level: "1.0" }, { text: "😭 Горе, печаль, апатия", level: "0.5" }, { text: "😔 Глубокая апатия", level: "0.0" } ] },
-        // ... (скопируйте сюда все 22 вопроса из предыдущего ответа) ...
-        { text: "<b>22/22: Как Вас понимают люди:</b>", answers: [ { text: "💯 Очень хорошо", level: "4.0" }, { text: "😊 Хорошо", level: "3.5" }, { text: "🙂 Обычно понимают", level: "3.0" }, { text: "🤔 Иногда неверно понимают", level: "2.5" }, { text: "🤷‍♂️ Часто неверно понимают", level: "2.0" }, { text: "🤯 Постоянно неверно понимают", level: "1.5" }, { text: "🚫 Нет настоящего понимания", level: "1.0" }, { text: "❓ Вообще не понимают", level: "0.5" }, { text: "... Игнорируют", level: "0.0" } ] },
-    ];
-    const resultsData = {
-        '4.0': `<b>Ваши шансы на успех и потенциал выживания невероятно высоки. Тон 4.0</b>\n\nВаша энергия и Ваши способности максимально работают на Вас...`,
-        // ... (скопируйте сюда все описания результатов) ...
-        '0.0': `<b>Ваши шансы на успех и потенциал выживания практически равны нулю. Тон 0.0</b>\n\nВаше состояние такое, что шансы на успех практически равны нулю...`,
-    };
-    // -------------------
+p {
+    font-size: 16px;
+    color: var(--hint-color);
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
 
-    startBtn.addEventListener('click', startQuiz);
-    restartBtn.addEventListener('click', startQuiz);
+button {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--button-color);
+    color: var(--button-text-color);
+    transition: opacity 0.2s;
+    user-select: none;
+}
 
-    function startQuiz() {
-        currentQuestionIndex = 0;
-        scores = { '4.0': 0, '3.5': 0, '3.0': 0, '2.5': 0, '2.0': 0, '1.5': 0, '1.0': 0, '0.5': 0, '0.0': 0 };
-        
-        startScreen.style.display = 'none';
-        resultScreen.style.display = 'none';
-        quizScreen.style.display = 'flex';
+button:active {
+    opacity: 0.8;
+}
 
-        showQuestion(currentQuestionIndex);
-    }
+#progress-bar-container {
+    width: 100%;
+    height: 4px;
+    background-color: var(--secondary-bg-color);
+    border-radius: 2px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
 
-    function showQuestion(index) {
-        const question = quizData[index];
-        
-        // Обновляем прогресс
-        const progress = ((index + 1) / quizData.length) * 100;
-        progressBar.style.width = `${progress}%`;
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--button-color);
+    border-radius: 2px;
+    transition: width 0.3s ease-out;
+}
 
-        // Обновляем текст вопроса
-        questionTitle.textContent = `${index + 1}/${quizData.length}`;
-        questionText.innerHTML = question.text.replace(/<b>|<\/b>/g, ''); // Убираем теги для чистого текста
+#question-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
 
-        // Очищаем и создаем ответы
-        answersContainer.innerHTML = '';
-        question.answers.forEach(answer => {
-            const answerEl = document.createElement('div');
-            answerEl.classList.add('answer-option');
-            answerEl.textContent = answer.text;
-            answerEl.addEventListener('click', () => selectAnswer(answer.level));
-            answersContainer.appendChild(answerEl);
-        });
-    }
+#question-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--hint-color);
+    margin: 0 0 5px 0;
+}
 
-    function selectAnswer(level) {
-        scores[level]++;
-        currentQuestionIndex++;
+#question-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.4;
+}
 
-        if (currentQuestionIndex < quizData.length) {
-            showQuestion(currentQuestionIndex);
-        } else {
-            showResult();
-        }
-    }
+#answers-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-    function showResult() {
-        let dominantLevel = '0.0';
-        let maxScore = 0;
-        for (const level in scores) {
-            if (scores[level] > maxScore) {
-                maxScore = scores[level];
-                dominantLevel = level;
-            }
-        }
+.answer-option {
+    padding: 15px;
+    background-color: var(--secondary-bg-color);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    transition: background-color 0.2s;
+    user-select: none;
+}
 
-        resultToneEl.textContent = `Тон ${dominantLevel}`;
-        resultDescriptionEl.innerHTML = resultsData[dominantLevel];
+.answer-option:active {
+    background-color: #e0e0e0;
+}
 
-        quizScreen.style.display = 'none';
-        resultScreen.style.display = 'flex';
-        
-        sendDataToBackend(dominantLevel);
-    }
-    
-    function sendDataToBackend(result) {
-        // Получаем данные пользователя от Telegram
-        const user = tg.initDataUnsafe?.user;
-        if (!user) {
-            console.error("Не удалось получить данные пользователя");
-            return;
-        }
+#result-screen h1 {
+    margin-bottom: 25px;
+}
 
-        const dataToSend = {
-            user: {
-                id: user.id,
-                firstName: user.first_name,
-                lastName: user.last_name,
-                username: user.username,
-            },
-            result: result
-        };
+#result-tone {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
 
-        // Отправляем данные на бэкенд
-        fetch(BACKEND_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' }, // GAS лучше работает с text/plain
-            body: JSON.stringify(dataToSend),
-        })
-        .then(response => response.json())
-        .then(data => console.log('Бэкенд ответил:', data))
-        .catch(error => console.error('Ошибка отправки на бэкенд:', error));
-    }
-});
+#result-description {
+    text-align: left;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    background-color: var(--secondary-bg-color);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    font-size: 15px;
+}
+
+/* Адаптация под темную тему Telegram */
+body.dark {
+    --bg-color: #18222d;
+    --text-color: #ffffff;
+    --hint-color: #7a8895;
+    --button-color: #5288c1;
+    --button-text-color: #ffffff;
+    --secondary-bg-color: #212d3b;
+}
+
+body.dark .answer-option:active {
+    background-color: #2b3a4c;
+}
