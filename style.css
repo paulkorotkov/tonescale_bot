@@ -1,0 +1,141 @@
+:root {
+    --tg-bg-color: #ffffff;
+    --tg-text-color: #000000;
+    --tg-hint-color: #aaaaaa;
+    --tg-button-color: #2481CC;
+    --tg-button-text-color: #ffffff;
+    --tg-secondary-bg-color: #f3f2f7;
+    --tg-border-color: #e5e5e5;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: var(--tg-text-color);
+    background-color: var(--tg-bg-color);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+#app {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 16px;
+    color: var(--tg-hint-color);
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background-color: var(--tg-button-color);
+    color: var(--tg-button-text-color);
+    transition: opacity 0.2s;
+}
+
+button:active {
+    opacity: 0.8;
+}
+
+#progress-bar-container {
+    width: 100%;
+    height: 4px;
+    background-color: var(--tg-secondary-bg-color);
+    border-radius: 2px;
+    margin-bottom: 25px;
+}
+
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--tg-button-color);
+    border-radius: 2px;
+    transition: width 0.3s ease-out;
+}
+
+#question-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#question-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--tg-hint-color);
+    margin: 0 0 5px 0;
+}
+
+#question-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--tg-text-color);
+    margin: 0;
+}
+
+#answers-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.answer-option {
+    padding: 15px;
+    background-color: var(--tg-secondary-bg-color);
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    transition: background-color 0.2s, border 0.2s;
+    border: 2px solid transparent;
+}
+
+.answer-option:active {
+    background-color: #e5e5e5;
+}
+
+#result-screen h1 {
+    margin-bottom: 25px;
+}
+
+#result-tone {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+#result-description {
+    text-align: left;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    background-color: var(--tg-secondary-bg-color);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
